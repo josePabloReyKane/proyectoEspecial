@@ -1,0 +1,5 @@
+matricula_view.py
+1) dejar espacio para only view: # Fecha — Entry + botón calendario
+2) Crear codigo para fecha igual a hoy: 
+
+3) dejar una sola logica

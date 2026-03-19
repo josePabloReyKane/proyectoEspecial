@@ -1,0 +1,43 @@
+import tkinter as tk
+from tkinter import messagebox
+from services.docentes_services import DocenteService
+ 
+class DocenteView:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Gestión de Docentes")
+        self.root.geometry("400x300")
+        # Crear y empaquetar widgets
+        tk.Label(root, text="Identificación:").pack()
+        self.ident_entry = tk.Entry(root)
+        self.ident_entry.pack()
+        tk.Label(root, text="Nombre Completo:").pack()
+        self.nombre_entry = tk.Entry(root)
+        self.nombre_entry.pack()
+        tk.Label(root, text="Profesión (ID):").pack()
+        self.profesion_entry = tk.Entry(root)
+        self.profesion_entry.pack()
+        tk.Button(root, text="Guardar", command=self.guardar).pack(pady=10)
+    def guardar(self):
+        # Validar que los campos no estén vacíos
+        if not self.ident_entry.get() or not self.nombre_entry.get() or not self.profesion_entry.get():
+            messagebox.showwarning("Campos vacíos", "Por favor complete todos los campos")
+            return
+        try:
+            service = DocenteService()
+            docente = {
+                "identificacion": self.ident_entry.get(),
+                "nombre_completo": self.nombre_entry.get(),
+                "id_profesion": self.profesion_entry.get(),
+                "estado": "Activo"
+            }
+            # Intentar crear el docente
+            resultado = service.crear_docente(docente)
+            # Si la operación fue exitosa
+            messagebox.showinfo("Éxito", "Docente registrado correctamente")
+            # Limpiar campos después de guardar
+            self.ident_entry.delete(0, tk.END)
+            self.nombre_entry.delete(0, tk.END)
+            self.profesion_entry.delete(0, tk.END)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo registrar el docente:\n{str(e)}")

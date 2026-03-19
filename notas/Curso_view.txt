@@ -1,0 +1,37 @@
+import tkinter as tk
+from tkinter import messagebox
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from services.cursos_services import CursoService
+
+class CursoView:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Gestión de Cursos")
+        self.root.geometry("400x300")
+
+        tk.Label(root, text="Código:").pack()
+        self.codigo_entry = tk.Entry(root)
+        self.codigo_entry.pack()
+
+        tk.Label(root, text="Descripción:").pack()
+        self.descripcion_entry = tk.Entry(root)
+        self.descripcion_entry.pack()
+
+        tk.Label(root, text="Precio Matrícula:").pack()
+        self.precio_entry = tk.Entry(root)
+        self.precio_entry.pack()
+
+        tk.Button(root, text="Guardar", command=self.guardar).pack(pady=10)
+
+    def guardar(self):
+        service = CursoService()
+        curso = {
+            "codigo": self.codigo_entry.get(),
+            "descripcion": self.descripcion_entry.get(),
+            "precio_matricula": self.precio_entry.get(),
+            "estado": "Activo"
+        }
+        service.crear_curso(curso)
+        messagebox.showinfo("Éxito", "Curso registrado correctamente")
