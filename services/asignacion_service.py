@@ -4,7 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import ConexionDB
 import pyodbc
+from historial_service import HistorialService
 
+historial = HistorialService()
 
 class AsignacionService:
 
@@ -178,7 +180,12 @@ class AsignacionService:
                 asignacion['id_estado'],
                 id_asignacion
             ))
-
+            historial.crear_movimiento({
+                'codigo':'Asignacion docente',
+                'desripion':'Actualizacion'
+                'estado':'id_estado'
+            })
+            
             conexion.commit()
             cursor.close()
             conexion.close()

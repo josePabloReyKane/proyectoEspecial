@@ -11,7 +11,7 @@ class HistorialView:
     def __init__(self, root):
         self.root = root
         self.root.title("Historial de movimient")
-        self.root.geometry("900x580")
+        self.root.geometry("900x650")
         self.root.resizable(True, True)
 
         self.service = HistorialService()
@@ -19,7 +19,7 @@ class HistorialView:
 
         self.centrar_ventana()
         self.crear_widgets()
-        self.cargar_programas()
+        self.cargar_historial()
 
     def centrar_ventana(self):
         self.root.update_idletasks()
@@ -33,31 +33,22 @@ class HistorialView:
         main_frame = ttk.Frame(self.root, padding="15")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(main_frame, text="REPORTE DE ESTUDIANTES POR CURSO",
+        tk.Label(main_frame, text="REPORTE DE HISTORIAL",
                  font=("Arial", 16, "bold"), fg="#2c3e50").pack(pady=(0, 15))
 
         # ── FILTRO ────────────────────────────────────────────
         filter_frame = ttk.LabelFrame(main_frame, text="📌 Filtro", padding="12")
         filter_frame.pack(fill=tk.X, pady=(0, 12))
 
-        tk.Label(filter_frame, text="Curso/Programa:",
-                 font=("Arial", 10)).pack(side=tk.LEFT, padx=(0, 8))
-
-        self.programa_combo = ttk.Combobox(filter_frame, width=45,
-                                           font=("Arial", 10), state="readonly")
-        self.programa_combo.pack(side=tk.LEFT, padx=(0, 10))
-
-        ttk.Button(filter_frame, text="Consultar por curso",
-                   command=self.consultar_por_curso).pack(side=tk.LEFT, padx=4)
         ttk.Button(filter_frame, text="Mostrar todos",
                    command=self.mostrar_todos).pack(side=tk.LEFT, padx=4)
 
         # GRID DE RESULTADOS
-        tree_frame = ttk.LabelFrame(main_frame, text="📊 Estudiantes Matriculados", padding="10")
+        tree_frame = ttk.LabelFrame(main_frame, text="📊 Historial", padding="10")
         tree_frame.pack(fill=tk.BOTH, expand=True)
 
-        columns = ('estudiante', 'carnet', 'programa', 'fecha', 'periodo', 'estado')
-        headers = ['Estudiante', 'Carnet', 'Programa', 'Fecha Matrícula', 'Periodo', 'Estado']
+        columns = ('id_tipo_movimiento', 'codigo', 'descripcion', 'estado')
+        headers = ['id_tipo_movimiento', 'Codigo', 'Descripcion', 'Estado']
         widths   = [200, 90, 200, 110, 80, 90]
 
         container = ttk.Frame(tree_frame)
@@ -99,36 +90,39 @@ class HistorialView:
 
     # CARGA DE DATOS
 
-    def cargar_programas(self):
-        programas, error = self.service.obtener_programas_activos()
-        if error:
-            messagebox.showerror("Error", f"No se pudieron cargar programas:\n{error}")
-            return
-        self._programas = programas or []
-        self.programa_combo['values'] = [
-            f"{p['codigo']} - {p['descripcion']}" for p in self._programas
-        ]
+    def cargar_historial(self):
+        try:
+            programas, error = self.service.obtener_movimiento()
+            
+            if error:
+                messagebox.showerror("Error", f"No se pudieron cargar el historial:\n{error}")
+                self.mostrar_estado(f"Error al cargar historial", "error")
+                self._programas = []
+                return
+                
+            self._programas = programas or []
+            
+            # Poblar el Treeview automáticamente al cargar
+            self._poblar_tree(self._programas, modo='todos')
+            
+            # Actualizar contador
+            self.contador_label.config(text=f"Total: {len(self._programas)} registros")
+            
+            # Mensaje de estado
+            if self._programas:
+                self.mostrar_estado(f"✅ {len(self._programas)} movimientos cargados correctamente", "success")
+            else:
+                self.mostrar_estado("ℹ️ No hay movimientos registrados aún", "info")
+                
+        except Exception as e:
+            messagebox.showerror("Error inesperado", f"Ocurrió un error al cargar el historial:\n{str(e)}")
+            self.mostrar_estado("Error al cargar historial", "error")
+            self._programas = []
 
-    def consultar_por_curso(self):
-        idx = self.programa_combo.current()
-        if idx < 0:
-            messagebox.showwarning("Advertencia", "Seleccione un Curso/Programa")
-            return
-        id_programa = self._programas[idx]['id_programa']
-        nombre_programa = self._programas[idx]['descripcion']
 
-        matriculas, error = self.service.obtener_matriculas_por_programa(id_programa)
-        if error:
-            messagebox.showerror("Error", error)
-            self.mostrar_estado(f"Error: {error}", "error")
-            return
-
-        self._poblar_tree(matriculas, modo='por_curso')
-        self.mostrar_estado(
-            f"📋 {len(matriculas)} estudiantes en: {nombre_programa}", "success")
 
     def mostrar_todos(self):
-        matriculas, error = self.service.obtener_matriculas()
+        matriculas, error = self.service.obtener_movimiento()
         if error:
             messagebox.showerror("Error", error)
             self.mostrar_estado(f"Error: {error}", "error")
@@ -143,21 +137,18 @@ class HistorialView:
             if modo == 'por_curso':
                 # obtener_matriculas_por_programa devuelve nombre_estudiante y carnet
                 self.tree.insert('', 'end', tags=(tag,), values=(
-                    m.get('nombre_estudiante', ''),
-                    m.get('carnet', ''),
-                    m.get('nombre_programa', ''),
-                    m.get('fecha', ''),
-                    m.get('periodo', ''),
+                    m.get('id_tipo_movimiento', ''),
+                    m.get('codigo', ''),
+                    m.get('descripcion', ''),
                     m.get('estado', '')
                 ))
             else:
                 # obtener_matriculas devuelve nombre_estudiante y nombre_programa
                 self.tree.insert('', 'end', tags=(tag,), values=(
-                    m.get('nombre_estudiante', ''),
+                    m.get('id_tipo_movimiento', ''),
                     '',
-                    m.get('nombre_programa', ''),
-                    m.get('fecha', ''),
-                    m.get('periodo', ''),
+                    m.get('codigo', ''),
+                    m.get('descripcion', ''),
                     m.get('estado', '')
                 ))
         self.contador_label.config(text=f"Total: {len(datos)} registros")
@@ -172,11 +163,32 @@ class HistorialView:
     def volver_menu(self):
         if messagebox.askyesno("Confirmar", "¿Volver al menú principal?"):
             self.root.destroy()
+            
+            
+    def guardar_Movimiento(self):
+        if not self.validar_campos_requeridos():
+            return
+
+        try:
+            datos = self.obtener_datos_formulario()
+            success, mensaje = self.service.crear_movimiento(datos)
+
+            if success:
+                messagebox.showinfo("Éxito", mensaje)
+                self.mostrar_estado(mensaje, "success")
+                self.limpiar_formulario()
+                
+            else:
+                messagebox.showerror("Error", mensaje)
+                self.mostrar_estado(mensaje, "error")
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            self.mostrar_estado(f"Error: {str(e)}", "error")
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = ReporteView(root)
+    app = HistorialView(root)
     root.mainloop()
     
     

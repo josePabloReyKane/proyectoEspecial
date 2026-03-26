@@ -17,8 +17,9 @@ class HistorialService:
                 OUTPUT INSERTED.id_tipo_movimiento
                 VALUES (?, ?, ?, ?, ?, ?)
             """
+            ultimo=self.obtener_movimiento()[-1]
             cursor.execute(query, (
-                asignacion['id_tipo_movimiento'],
+                str(int(ultimo['id_tipo_movimiento'])+1),
                 asignacion['codigo'],
                 asignacion['descripcion'],
                 asignacion['estado']
@@ -45,11 +46,11 @@ class HistorialService:
 
             query = """
                 SELECT
-                    a.id_movimiento_programa,
+                    a.id_tipo_movimiento,
                     a.codigo,
                     a.descripcion,
-                    a.estado,
-                FROM AsignacionDocente a
+                    a.estado
+                FROM TipoMovimiento a
             """
             cursor.execute(query)
             resultados = cursor.fetchall()
@@ -57,7 +58,7 @@ class HistorialService:
             asignaciones = []
             for row in resultados:
                 asignaciones.append({
-                    'id_movimiento_programa':  row[0],
+                    'id_tipo_movimiento':  row[0],
                     'codigo':           row[1],
                     'descripcion':      row[2],
                     'estado':           row[3]
@@ -68,7 +69,7 @@ class HistorialService:
             return asignaciones, None
 
         except Exception as e:
-            return None, f"Error al obtener asignaciones: {str(e)}"
+            return None, f"Error al obtener historial: {str(e)}"
         
         
         

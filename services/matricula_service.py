@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import ConexionDB
 import pyodbc
-
+from historial_service import HistorialService
 class MatriculaService:
 
     def crear_matricula(self, matricula):
@@ -166,7 +166,7 @@ class MatriculaService:
                 matricula.get('estado', 'Activo'),
                 id_matricula
             ))
-
+            
             conexion.commit()
             cursor.close()
             conexion.close()

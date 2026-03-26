@@ -7,7 +7,7 @@ class ReporteView:
     def __init__(self, root):
         self.root = root
         self.root.title("Reporte de Estudiantes por Curso")
-        self.root.geometry("900x580")
+        self.root.geometry("900x650")
         self.root.resizable(True, True)
 
         self.service = MatriculaService()
