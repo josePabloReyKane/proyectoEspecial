@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import ConexionDB
 import pyodbc
-from historial_service import HistorialService
+from services.historial_service import HistorialService
 
 class ProgramaService:
 

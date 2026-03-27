@@ -4,9 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import ConexionDB
 import pyodbc
-from historial_service import HistorialService
+from services.historial_service import HistorialService
 
-historial = HistorialService()
+AREMATI = HistorialService()
 
 class AsignacionService:
 
@@ -30,6 +30,12 @@ class AsignacionService:
                 asignacion['id_estado']
             ))
             id_asignacion = cursor.fetchone()[0]
+            
+            AREMATI.crear_movimiento({
+                'codigo':'Asignacion docente',
+                'desripion':'Actualizacion',
+                'estado':'id_estado'
+            })
 
             conexion.commit()
             cursor.close()
@@ -180,9 +186,10 @@ class AsignacionService:
                 asignacion['id_estado'],
                 id_asignacion
             ))
-            historial.crear_movimiento({
+            
+            AREMATI.crear_movimiento({
                 'codigo':'Asignacion docente',
-                'desripion':'Actualizacion'
+                'desripion':'Actualizacion',
                 'estado':'id_estado'
             })
             
@@ -208,6 +215,12 @@ class AsignacionService:
                            (id_asignacion,))
             if not cursor.fetchone():
                 return False, "Asignación no encontrada"
+            
+            AREMATI.crear_movimiento({
+                'codigo':'Asignacion docente',
+                'desripion':'ELIMINAR',
+                'estado':'id_estado'
+            })
 
             cursor.execute("DELETE FROM AsignacionDocente WHERE id_asignacion = ?",
                            (id_asignacion,))

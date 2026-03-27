@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.database import ConexionDB
-from historial_service import HistorialService
+from services.historial_service import HistorialService
 class UsuarioService:
     def autenticar(self, usuario, password):
         try:
